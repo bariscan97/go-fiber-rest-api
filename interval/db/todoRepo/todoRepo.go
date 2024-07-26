@@ -115,7 +115,7 @@ func (todoRepo *TodoRepository) GetAllTodos(user_id uuid.UUID, page int) ([]mode
 		WHERE user_id = $1
 		ORDER BY created_at
 		LIMIT 15 
-        OFF SET $2 * 15
+                OFF SET $2 * 15
 	`
 	rows, err := todoRepo.pool.Query(ctx, sql, user_id, page)
 	if err != nil {
