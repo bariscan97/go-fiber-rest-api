@@ -5,7 +5,8 @@ import (
 	"go-pgx/interval/db"
 	"go-pgx/pkg/models"
 	"time"
-    "github.com/google/uuid"
+
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -13,11 +14,11 @@ type TodoRepository struct {
 	pool *pgxpool.Pool
 }
 type ITodoRepository interface {
-	CreateTodo(user_id uuid.UUID, content string) error 
+	CreateTodo(user_id uuid.UUID, content string) error
 	UpdateTodo(user_id uuid.UUID, todo_id uuid.UUID, content string) error
-	DeleteTodo(user_id uuid.UUID, todo_id uuid.UUID) error 
+	DeleteTodo(user_id uuid.UUID, todo_id uuid.UUID) error
 	GetTodoById(user_id uuid.UUID, todo_id uuid.UUID) (models.FetchTodoModel, error)
-	GetAllTodos(user_id uuid.UUID ,page int) ([]models.FetchTodoModel, error)
+	GetAllTodos(user_id uuid.UUID, page int) ([]models.FetchTodoModel, error)
 }
 
 func NewUserRepo() ITodoRepository {
@@ -43,7 +44,7 @@ func (todoRepo *TodoRepository) CreateTodo(user_id uuid.UUID, content string) er
 
 func (todoRepo *TodoRepository) UpdateTodo(user_id uuid.UUID, todo_id uuid.UUID, content string) error {
 	ctx := context.Background()
-	
+
 	sql := `
 		UPDATE todos
 		SET 
@@ -53,7 +54,7 @@ func (todoRepo *TodoRepository) UpdateTodo(user_id uuid.UUID, todo_id uuid.UUID,
 
 		`
 	_, err := todoRepo.pool.Exec(ctx, sql, content, user_id, todo_id)
-	
+
 	if err != nil {
 		return err
 	}
@@ -88,7 +89,7 @@ func (todoRepo *TodoRepository) GetTodoById(user_id uuid.UUID, todo_id uuid.UUID
 
 	var (
 		id       uuid.UUID
-		userID   uuid.UUID 
+		userID   uuid.UUID
 		content  string
 		createAt time.Time
 	)
@@ -100,13 +101,13 @@ func (todoRepo *TodoRepository) GetTodoById(user_id uuid.UUID, todo_id uuid.UUID
 	}
 
 	return models.FetchTodoModel{
-		Id: id,
-		Content: content,
-		CreateAt : createAt,
+		Id:       id,
+		Content:  content,
+		CreateAt: createAt,
 	}, nil
 }
 
-func (todoRepo *TodoRepository) GetAllTodos(user_id uuid.UUID ,page int) ([]models.FetchTodoModel, error) {
+func (todoRepo *TodoRepository) GetAllTodos(user_id uuid.UUID, page int) ([]models.FetchTodoModel, error) {
 	ctx := context.Background()
 
 	sql := `
@@ -116,35 +117,33 @@ func (todoRepo *TodoRepository) GetAllTodos(user_id uuid.UUID ,page int) ([]mode
 		LIMIT 15 
         OFF SET $2 * 15
 	`
-	rows ,err := todoRepo.pool.Query(ctx, sql, user_id ,page)
+	rows, err := todoRepo.pool.Query(ctx, sql, user_id, page)
 	if err != nil {
-		return []models.FetchTodoModel{} , err
+		return []models.FetchTodoModel{}, err
 	}
-	
+
 	var Todos []models.FetchTodoModel
 
 	for rows.Next() {
 		var (
 			id       uuid.UUID
 			content  string
-			userID   uuid.UUID 
+			userID   uuid.UUID
 			createAt time.Time
 			DbError  error
 		)
 		DbError = rows.Scan(&id, &content, &userID, &createAt)
 		if DbError != nil {
-			return []models.FetchTodoModel{} , DbError
+			return []models.FetchTodoModel{}, DbError
 		}
 		Todos = append(Todos, models.FetchTodoModel{
-			Id: id,
-			Content: content,
+			Id:       id,
+			Content:  content,
 			CreateAt: createAt,
 		})
 	}
-	return Todos  ,nil
+	return Todos, nil
 }
-
-
 
 // CREATE TABLE todos (
 //     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
