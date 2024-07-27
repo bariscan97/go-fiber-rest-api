@@ -3,6 +3,7 @@ package user_service
 import (
 	"go-pgx/interval/db/userRepo"
 	"go-pgx/pkg/models"
+
 	"github.com/google/uuid"
 )
 
